@@ -85,6 +85,19 @@ class DriveBackupService {
   // For production, consider using Flutter Secure Storage or device keystore
   static const String _baseKey = 'ExpenseTrackerSecureKey2026!@#';
 
+  /// Restores the persistent login session from a previous app session.
+  /// This should be called on app startup to silently re-authenticate the user.
+  /// Returns true if a user session was successfully restored, false otherwise.
+  Future<bool> restorePersistentLogin() async {
+    try {
+      final account = await _googleSignIn.signInSilently();
+      return account != null;
+    } catch (e) {
+      print('Restore persistent login failed: $e');
+      return false;
+    }
+  }
+
   /// Signs in the user with Google and returns true if successful.
   /// Handles user cancellation gracefully.
   /// 

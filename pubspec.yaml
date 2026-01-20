@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.3
   uuid: ^4.5.1
+  showcaseview: ^5.0.1
   # Google Sign-In for authenticating users
   google_sign_in: ^6.2.1
   # Google APIs for Drive AppDataFolder access
@@ -46,6 +47,7 @@ dependencies:
   encrypt: ^5.0.3
   # Path provider for temporary file storage during backup/restore
   path_provider: ^2.1.5
+  lottie: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -103,6 +105,9 @@ flutter:
     - family: LeckerliOne
       fonts:
         - asset: lib/assets/fonts/LeckerliOne-Regular.ttf
+
+  assets:
+    - lib/assets/lottie/
 
 # Configuration for flutter_launcher_icons
 flutter_icons:

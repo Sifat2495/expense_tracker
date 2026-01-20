@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:showcaseview/showcaseview.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../models/expense.dart';
 import '../core/theme.dart';
@@ -17,6 +19,9 @@ class _ExpenseHistoryPageState extends State<ExpenseHistoryPage> {
   late List<Expense> _all;
   late List<Expense> _filtered;
 
+  final GlobalKey _filterKey = GlobalKey();
+  final GlobalKey _resultsKey = GlobalKey();
+
   DateTime? _from;
   DateTime? _to;
   String? _category;
@@ -32,7 +37,35 @@ class _ExpenseHistoryPageState extends State<ExpenseHistoryPage> {
     super.initState();
     _all = List.from(widget.expenses);
     _applyFilters();
+    _maybeStartTutorial();
   }
+
+  // Future<void> _maybeStartTutorial() async {
+  //   final prefs = await SharedPreferences.getInstance();
+  //   final seen = prefs.getBool('seen_history_tutorial') ?? false;
+  //   if (seen) return;
+
+  //   // Start showcase after first frame
+  //   WidgetsBinding.instance.addPostFrameCallback((_) {
+  //     if (!mounted) return;
+  //     try {
+  //       ShowCaseWidget.of(context)?.startShowCase([_filterKey]);
+  //     } catch (_) {}
+  //   });
+
+  //   await prefs.setBool('seen_history_tutorial', true);
+  // }
+
+
+Future<void> _maybeStartTutorial() async {
+  // Start showcase after first frame using the v5 API
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (!mounted) return;
+    try {
+      ShowcaseView.get().startShowCase([_filterKey, _resultsKey]);
+    } catch (_) {}
+  });
+}
 
   void _applyFilters() {
     var list = _all.where((e) {
@@ -146,17 +179,21 @@ class _ExpenseHistoryPageState extends State<ExpenseHistoryPage> {
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 8),
-            child: IconButton(
-              icon: Badge(
-                isLabelVisible: _hasActiveFilters,
-                backgroundColor: AppColors.warning,
-                child: Icon(
-                  _showFilters ? Icons.filter_list_off : Icons.filter_list,
-                  color: Colors.white,
+            child: Showcase(
+              key: _filterKey,
+              description: 'Tap to open filters to narrow results',
+              child: IconButton(
+                icon: Badge(
+                  isLabelVisible: _hasActiveFilters,
+                  backgroundColor: AppColors.warning,
+                  child: Icon(
+                    _showFilters ? Icons.filter_list_off : Icons.filter_list,
+                    color: Colors.white,
+                  ),
                 ),
+                onPressed: () => setState(() => _showFilters = !_showFilters),
+                tooltip: 'Toggle Filters',
               ),
-              onPressed: () => setState(() => _showFilters = !_showFilters),
-              tooltip: 'Toggle Filters',
             ),
           ),
         ],
@@ -358,29 +395,39 @@ class _ExpenseHistoryPageState extends State<ExpenseHistoryPage> {
             ),
           ),
           
-          // Results info
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL, vertical: AppDimens.paddingS),
-            color: AppColors.background,
-            child: Text(
-              '${_filtered.length} expense${_filtered.length == 1 ? '' : 's'} found',
-              style: AppTextStyles.caption,
-            ),
-          ),
-
-          // Expense list
+          // Results + list (highlight together to show scrolling)
           Expanded(
-            child: _filtered.isEmpty
-                ? _buildEmptyState()
-                : ListView.builder(
-                    padding: const EdgeInsets.all(AppDimens.paddingL),
-                    itemCount: _filtered.length,
-                    itemBuilder: (ctx, i) {
-                      final e = _filtered[i];
-                      return _buildExpenseCard(e);
-                    },
+            child: Showcase(
+              key: _resultsKey,
+              description: 'These are your results — scroll down to see more items',
+              enableAutoScroll: true,
+              child: Column(
+                children: [
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: AppDimens.paddingL, vertical: AppDimens.paddingS),
+                    color: AppColors.background,
+                    child: Text(
+                      '${_filtered.length} expense${_filtered.length == 1 ? '' : 's'} found',
+                      style: AppTextStyles.caption,
+                    ),
                   ),
+
+                  Expanded(
+                    child: _filtered.isEmpty
+                        ? _buildEmptyState()
+                        : ListView.builder(
+                            padding: const EdgeInsets.all(AppDimens.paddingL),
+                            itemCount: _filtered.length,
+                            itemBuilder: (ctx, i) {
+                              final e = _filtered[i];
+                              return _buildExpenseCard(e);
+                            },
+                          ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
