@@ -18,6 +18,9 @@ class StorageService {
     return StorageService._(prefs);
   }
 
+  // Expose _prefs for DriveBackupService to access raw budget data
+  SharedPreferences get prefs => _prefs;
+
   List<Expense> loadExpenses() {
     final raw = _prefs.getString(_key);
     if (raw == null || raw.isEmpty) return [];

@@ -11,6 +11,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:expense_tracker/src/screens/expense_home.dart';
 import 'package:expense_tracker/models/expense.dart';
 import 'package:expense_tracker/services/storage_service.dart';
+import 'package:shared_preferences/src/shared_preferences_legacy.dart';
 
 void main() {
   testWidgets('Shows add button and empty message', (WidgetTester tester) async {
@@ -42,5 +43,9 @@ class _FakeStorage implements StorageService {
 
   @override
   Future<bool> saveBudgetsForMonth(int year, int month, Map<String, double> budgets) async => true;
+
+  @override
+  // TODO: implement prefs
+  SharedPreferences get prefs => throw UnimplementedError();
 }
 
